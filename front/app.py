@@ -8,6 +8,8 @@ app.secret_key = 'your_secret_key'  # Replace with a secure secret key
 # Middleware API base URL
 #API_URL = 'http://localhost:8000'  # Adjust if necessary
 
+# test workflow
+
 # Middleware API base URL
 API_URL = 'http://host.docker.internal:8000'
 
