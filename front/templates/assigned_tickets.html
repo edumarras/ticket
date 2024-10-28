@@ -1,0 +1,31 @@
+<!-- templates/assigned_tickets.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h2>My Assigned Tickets</h2>
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    {% for ticket in tickets %}
+    {% if ticket['Status'] == 1 %}
+    <tr>
+        <td>{{ ticket['Titulo'] }}</td>
+        <td>{{ ticket['Descricao'] }}</td>
+        <td>{{ ticket['Prioridade'] }}</td>
+        <td>In Progress</td>
+        <td>
+            <form action="{{ url_for('complete_ticket', ticket_id=ticket['ID']) }}" method="post">
+                <button type="submit">Complete</button>
+            </form>
+        </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+<a href="{{ url_for('user_dashboard') }}">Back to Dashboard</a><br>
+<a href="{{ url_for('logout') }}">Logout</a>
+{% endblock %}

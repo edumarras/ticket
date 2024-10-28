@@ -1,0 +1,27 @@
+<!-- templates/user_dashboard.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h2>Open Tickets</h2>
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Priority</th>
+        <th>Action</th>
+    </tr>
+    {% for ticket in tickets %}
+    <tr>
+        <td>{{ ticket['Titulo'] }}</td>
+        <td>{{ ticket['Descricao'] }}</td>
+        <td>{{ ticket['Prioridade'] }}</td>
+        <td>
+            <form action="{{ url_for('assign_ticket', ticket_id=ticket['ID']) }}" method="post">
+                <button type="submit">Take</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{{ url_for('view_assigned_tickets') }}">View My Tickets</a><br>
+<a href="{{ url_for('logout') }}">Logout</a>
+{% endblock %}
