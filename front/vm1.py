@@ -29,11 +29,24 @@ def check_and_update():
         
         if containers:
             container = containers[0]
-            logging.info("Reiniciando container...")
-            print("Atualização encontrada! Reiniciando o container...")
-            container.restart()
-            logging.info("Container reiniciado com sucesso!")
-            print("Container reiniciado com sucesso!")
+            
+            # Verifica se há uma atualização na imagem
+            current_image_id = container.image.id
+            new_image_id = new_image.id
+            
+            if current_image_id != new_image_id:
+                logging.info("Nova imagem detectada. Atualizando o container...")
+                print("Nova imagem detectada! Reiniciando o container...")
+
+                # Remove o container antigo e cria um novo
+                container.remove(force=True)
+                client.containers.run(image_name, detach=True, name="ticket-front-container")
+                
+                logging.info("Container atualizado com a nova imagem com sucesso!")
+                print("Container atualizado com a nova imagem com sucesso!")
+            else:
+                logging.info("Imagem já está atualizada. Nenhuma ação necessária.")
+                print("Imagem já está atualizada. Nenhuma ação necessária.")
         else:
             logging.warning("Nenhum container encontrado rodando a imagem.")
             print("Nenhum container encontrado rodando a imagem.")
