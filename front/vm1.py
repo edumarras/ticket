@@ -29,6 +29,12 @@ def check_and_update():
         
         if containers:
             container = containers[0]
+            # Captura o nome da imagem do container encontrado
+            current_image_name = container.image.tags[0] if container.image.tags else "Imagem sem nome"
+            
+            # Loga e printa o nome da imagem do container
+            logging.info(f"Container encontrado rodando a imagem: {current_image_name}")
+            print(f"Container encontrado rodando a imagem: {current_image_name}")
             
             # Verifica se há uma atualização na imagem
             current_image_id = container.image.id
