@@ -2,7 +2,7 @@ import docker
 import time
 import logging
 from datetime import datetime
-
+#caguei em vc
 # Configuração do logging
 logging.basicConfig(
     filename='docker_update.log',
