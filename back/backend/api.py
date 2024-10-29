@@ -3,7 +3,7 @@ import sqlite3
 
 app = Flask(__name__)
 
-#oi bom dia
+#gAPMERIK234823
 
 # Função para conectar ao banco de dados SQLite 
 def connect_db():
