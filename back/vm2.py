@@ -42,6 +42,15 @@ def recreate_containers():
     except subprocess.CalledProcessError as e:
         print(f"Erro ao recriar os containers: {e}")
 
+def toggle_network(interface, state):
+    """Ativa ou desativa a conexão de rede."""
+    action = "up" if state else "down"
+    try:
+        subprocess.run(["sudo", "ip", "link", "set", interface, action], check=True)
+        print(f"Interface {interface} {'ativada' if state else 'desativada'} com sucesso.")
+    except subprocess.CalledProcessError as e:
+        print(f"Erro ao {'ativar' if state else 'desativar'} a interface {interface}: {e}")
+
 def main():
     print("Iniciando o monitoramento de atualizações das imagens Docker backend e middleware...")
 
@@ -49,7 +58,10 @@ def main():
     last_image_digests = {name: get_remote_image_digest(image) for name, image in IMAGES.items()}
 
     while True:
-        time.sleep(10)  # Intervalo de verificação de 10 segundos
+        # Ativa a conexão de rede para verificar atualizações
+        toggle_network("ens33", True)
+        
+        time.sleep(5)  # Pequeno atraso para garantir que a conexão seja restabelecida
 
         for name, image_name in IMAGES.items():
             # Obtém o digest da imagem remota atual
@@ -63,6 +75,12 @@ def main():
                 last_image_digests[name] = current_image_digest  # Atualiza o digest da última versão
             else:
                 print(f"Nenhuma atualização detectada para {name}.")
+
+        # Desativa a conexão de rede após a verificação
+        toggle_network("ens33", False)
+
+        # Aguarda 90 segundos antes da próxima verificação
+        time.sleep(90)
 
 if __name__ == "__main__":
     main()
