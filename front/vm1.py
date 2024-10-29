@@ -6,6 +6,8 @@ import subprocess
 DOCKER_IMAGE_NAME = "pois0n/ticket-front:latest"  # Nome completo da imagem no Docker Hub
 CONTAINER_NAME = "front"  # Nome para identificar o container frontend
 
+#shkirasalvaNOIX
+
 # Inicializa o cliente Docker
 client = docker.from_env()
 
