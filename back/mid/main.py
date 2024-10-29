@@ -9,7 +9,7 @@ import httpx
 app = FastAPI()
 print("Middleware iniciado com código atualizado")
 
-# GAYSSAURO
+# GAYSSAURO2
 
 # Configuração do cliente HTTP
 BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:3000")  # Alterado para 'backend'
