@@ -3,7 +3,9 @@ import sqlite3
 
 app = Flask(__name__)
 
-# Função para conectar ao banco de dados SQLite
+#oi bom dia
+
+# Função para conectar ao banco de dados SQLite 
 def connect_db():
     conn = sqlite3.connect('data.db')
     conn.row_factory = sqlite3.Row  # Permite acesso aos resultados como dicionários
