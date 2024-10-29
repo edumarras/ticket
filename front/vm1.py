@@ -1,7 +1,6 @@
 import docker
 import time
 
-#oi
 # Configurações do Docker e da imagem
 DOCKER_IMAGE_NAME = "pois0n/ticket-front:latest"  # Nome completo da imagem no Docker Hub
 CONTAINER_NAME = "front"  # Nome para identificar o container frontend
