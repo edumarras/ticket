@@ -5,20 +5,20 @@ services:
     image: pois0n/ticket-db:latest  # Imagem do Docker Hub para o serviço backend
     container_name: back
     ports:
-      - "3000:3000"
+      - "3000:3000"  # Exposição da porta para acesso externo
     networks:
-      - app_network
+      - app_network  # Rede interna do Docker para comunicação entre containers
 
   middleware:
     image: pois0n/ticket-api:latest  # Imagem do Docker Hub para o serviço middleware
     container_name: middle
     ports:
-      - "8000:8000"
+      - "8000:8000"  # Exposição da porta para acesso externo
     depends_on:
       - backend
     networks:
-      - app_network
+      - app_network  # Rede interna do Docker para comunicação entre containers
 
 networks:
   app_network:
-    driver: bridge
+    driver: bridge  # Rede bridge do Docker para comunicação interna entre os containers
