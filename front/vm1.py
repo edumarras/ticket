@@ -44,8 +44,8 @@ def main():
     last_image_digest = get_remote_image_digest()  # Obtém o digest da imagem remota inicialmente
     
     while True:
-        time.sleep(30)  # Intervalo de verificação de 30 segundos
-        
+        time.sleep(15)  # Intervalo de verificação de 30 segundos
+        print("oi")
         # Obtém o digest da imagem remota atual
         current_image_digest = get_remote_image_digest()
         
