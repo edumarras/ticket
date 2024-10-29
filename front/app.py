@@ -13,7 +13,7 @@ app.secret_key = 'your_secret_key'  # Replace with a secure secret key
 # test workflow 3432y42y4927
 
 # Middleware API base URL
-API_URL = 'http://192.168.100.10:8000'
+API_URL = 'http://192.168.100.11:8000'
 
 # app.py
 
