@@ -8,12 +8,14 @@ CONTAINER_NAME = "front"  # Nome para identificar o container frontend
 # Inicializa o cliente Docker
 client = docker.from_env()
 
-def get_local_image_id():
-    """Obtém o ID da imagem local do frontend."""
+def get_remote_image_digest():
+    """Obtém o digest da imagem remota para verificar se há atualizações."""
     try:
-        image = client.images.get(DOCKER_IMAGE_NAME)
-        return image.id
-    except docker.errors.ImageNotFound:
+        # Força o pull para garantir que temos a última versão e capturar o digest atualizado
+        image = client.images.pull(DOCKER_IMAGE_NAME)
+        return image.attrs['RepoDigests'][0]  # O digest da imagem remoto
+    except docker.errors.APIError as e:
+        print(f"Erro ao obter o digest da imagem remota: {e}")
         return None
 
 def update_container():
@@ -28,9 +30,6 @@ def update_container():
     except docker.errors.NotFound:
         pass
     
-    # Puxar a última imagem do Docker Hub
-    client.images.pull(DOCKER_IMAGE_NAME)
-    
     # Iniciar um novo container com a nova imagem
     client.containers.run(
         DOCKER_IMAGE_NAME,
@@ -42,19 +41,19 @@ def update_container():
 
 def main():
     print("Iniciando o monitoramento de atualizações da imagem Docker frontend...")
-    last_image_id = get_local_image_id()
+    last_image_digest = get_remote_image_digest()  # Obtém o digest da imagem remota inicialmente
     
     while True:
         time.sleep(30)  # Intervalo de verificação de 30 segundos
         
-        # Obtém o ID da imagem local
-        current_image_id = get_local_image_id()
+        # Obtém o digest da imagem remota atual
+        current_image_digest = get_remote_image_digest()
         
-        # Se o ID mudou, significa que há uma nova versão da imagem
-        if current_image_id != last_image_id:
+        # Se o digest mudou, significa que há uma nova versão da imagem
+        if current_image_digest and current_image_digest != last_image_digest:
             print("Nova imagem detectada! Atualizando o container...")
             update_container()
-            last_image_id = get_local_image_id()
+            last_image_digest = current_image_digest  # Atualiza o digest da última versão
         else:
             print("Nenhuma atualização detectada.")
 
