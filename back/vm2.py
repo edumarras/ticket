@@ -1,86 +1,83 @@
 import docker
 import time
-import logging
 import subprocess
-import os
-from datetime import datetime
 
-# Configuração do logging
-logging.basicConfig(
-   filename='docker_update.log',
-   level=logging.INFO,
-   format='%(asctime)s - %(message)s'
-)
+# Configurações das imagens e containers
+IMAGES = {
+    "back": "pois0n/ticket-db:latest",
+    "middle": "pois0n/ticket-api:latest"
+}
 
-def toggle_network(enable=True):
-   try:
-       command = f"sudo ip link set ens33 {'up' if enable else 'down'}"
-       subprocess.run(command.split(), check=True)
-       logging.info(f"Rede {'ativada' if enable else 'desativada'} com sucesso")
-       # Pequena pausa para garantir que a rede estabilize
-       time.sleep(5)
-       return True
-   except subprocess.CalledProcessError as e:
-       logging.error(f"Erro ao {'ativar' if enable else 'desativar'} a rede: {e}")
-       return False
+# Nome dos containers correspondentes
+CONTAINERS = {
+    "back": "back",
+    "middle": "middle"
+}
 
-def check_and_update():
-   try:
-       # Ativa a rede
-       if not toggle_network(True):
-           return
+# Inicializa o cliente Docker
+client = docker.from_env()
 
-       # Conecta ao Docker
-       client = docker.from_env()
-       
-       # Lista de imagens para verificar
-       images = [
-           "pois0n/ticket-api:latest",
-           "pois0n/ticket-db:latest"
-       ]
-       
-       updated = False
-       
-       for image_name in images:
-           try:
-               # Puxa a imagem mais recente
-               logging.info(f"Verificando atualizações para {image_name}...")
-               client.images.pull(image_name)
-               
-               # Encontra o container correspondente
-               containers = client.containers.list(
-                   filters={'ancestor': image_name}
-               )
-               
-               if containers:
-                   container = containers[0]
-                   logging.info(f"Reiniciando container {image_name}...")
-                   container.restart()
-                   logging.info(f"Container {image_name} reiniciado com sucesso!")
-                   updated = True
-               else:
-                   logging.warning(f"Nenhum container encontrado rodando a imagem {image_name}")
-                   
-           except docker.errors.APIError as e:
-               logging.error(f"Erro na API Docker para {image_name}: {e}")
-               
-   except Exception as e:
-       logging.error(f"Erro inesperado: {e}")
-   finally:
-       # Desativa a rede independente do resultado
-       toggle_network(False)
+def get_remote_image_digest(image_name):
+    """Obtém o digest da imagem remota para verificar se há atualizações."""
+    try:
+        # Força o pull para garantir que temos a última versão e capturar o digest atualizado
+        image = client.images.pull(image_name)
+        return image.attrs['RepoDigests'][0]  # O digest da imagem remoto
+    except docker.errors.APIError as e:
+        print(f"Erro ao obter o digest da imagem remota para {image_name}: {e}")
+        return None
+
+def update_code():
+    """Atualiza o código da aplicação com git pull no diretório atual."""
+    print("Atualizando o código da aplicação...")
+    try:
+        subprocess.run(["git", "pull", "origin", "main"], check=True)
+        print("Código atualizado com sucesso.")
+    except subprocess.CalledProcessError as e:
+        print(f"Erro ao atualizar o código: {e}")
+
+def update_container(image_name, container_name):
+    """Atualiza o container com a última versão da imagem."""
+    print(f"Atualizando o container {container_name} para a nova imagem...")
+
+    # Parar e remover o container atual se ele existir
+    try:
+        container = client.containers.get(container_name)
+        container.stop()
+        container.remove()
+    except docker.errors.NotFound:
+        pass
+
+    # Iniciar um novo container com a nova imagem
+    client.containers.run(
+        image_name,
+        name=container_name,
+        detach=True,
+        network_mode="bridge"  # Altere se precisar de outra configuração de rede
+    )
+    print(f"Container {container_name} atualizado e em execução.")
 
 def main():
-   while True:
-       check_and_update()
-       # Espera 1 minuto e 20 segundos antes de verificar novamente
-       time.sleep(80)
+    print("Iniciando o monitoramento de atualizações das imagens Docker backend e middleware...")
+
+    # Inicializa os últimos digests para cada imagem
+    last_image_digests = {name: get_remote_image_digest(image) for name, image in IMAGES.items()}
+
+    while True:
+        time.sleep(10)  # Intervalo de verificação de 30 segundos
+
+        for name, image_name in IMAGES.items():
+            # Obtém o digest da imagem remota atual
+            current_image_digest = get_remote_image_digest(image_name)
+
+            # Se o digest mudou, significa que há uma nova versão da imagem
+            if current_image_digest and current_image_digest != last_image_digests[name]:
+                print(f"Nova imagem detectada para {name}! Atualizando o container e o código da aplicação...")
+                update_code()  # Atualiza o código no diretório atual
+                update_container(image_name, CONTAINERS[name])
+                last_image_digests[name] = current_image_digest  # Atualiza o digest da última versão
+            else:
+                print(f"Nenhuma atualização detectada para {name}.")
 
 if __name__ == "__main__":
-   # Verifica se está rodando como root
-   if os.geteuid() != 0:
-       logging.error("Este script precisa ser executado como root")
-       exit(1)
-       
-   logging.info("Iniciando serviço de atualização...")
-   main()
+    main()
