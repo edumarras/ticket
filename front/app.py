@@ -8,7 +8,7 @@ app.secret_key = 'your_secret_key'  # Replace with a secure secret key
 # Middleware API base URL
 #API_URL = 'http://localhost:8000'  # Adjust if necessary
 
-# bom dia antonio
+# bom dia 
 
 # Middleware API base URL
 API_URL = 'http://192.168.100.11:8000'
