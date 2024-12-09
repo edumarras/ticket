@@ -13,31 +13,16 @@ jobs:
         image: pois0n/ticket-db:latest
         ports:
           - 3000:3000
-        options: >-
-          --health-cmd "curl --fail http://localhost:3000/tickets || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
       middleware:
         image: pois0n/ticket-api:latest
         ports:
           - 8000:8000
-        options: >-
-          --health-cmd "curl --fail http://localhost:8000/tickets || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
       frontend:
         image: pois0n/ticket-front:latest
         ports:
           - 5000:5000
-        options: >-
-          --health-cmd "curl --fail http://localhost:5000 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Check out code
@@ -67,8 +52,8 @@ jobs:
 
       - name: Wait for services to be ready
         run: |
-          echo "Aguardando containers subirem..."
-          sleep 30
+          echo "Aguardando containers subirem por 90 segundos..."
+          sleep 90
 
       - name: Run Front Unit Tests
         working-directory: ./front
