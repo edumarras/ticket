@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
 from enum import Enum
 import httpx
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 print("Middleware iniciado com código atualizado")
@@ -87,18 +88,22 @@ async def get_open_tickets(client: httpx.AsyncClient = Depends(get_http_client))
 @app.post("/register")
 async def create_user(user_data: CreateUser, client: httpx.AsyncClient = Depends(get_http_client)):
     user_payload = user_data.dict(by_alias=True)
-    print("\n[POST /register] Criando novo usuário:")
+    print("\n[POST /register] Criando novo usuário no backend:")
     print(f"POST {BACKEND_URL}/usuarios")
     print(f"Dados enviados: {user_payload}")
     response = await client.post("/usuarios", json=user_payload)
-    print(f"Código de status: {response.status_code}")
-    print(f"Conteúdo da resposta: {response.text}\n")
+    print(f"Código de status recebido do backend: {response.status_code}")
+    print(f"Conteúdo da resposta do backend: {response.text}\n")
     if response.status_code == 201:
-        return {"message": "Usuário criado com sucesso!"}
+        # Se o backend retornou 201, retornamos 201 também
+        print("Usuário criado com sucesso! Retornando 201 ao front.")
+        return JSONResponse(status_code=201, content={"message": "Usuário criado com sucesso!"})
     elif response.status_code == 400:
         error_message = response.json().get("error", "Erro ao criar usuário")
+        print(f"Erro ao criar usuário: {error_message}")
         raise HTTPException(status_code=400, detail=error_message)
     else:
+        print("Erro ao criar usuário, repassando código do backend para o front.")
         raise HTTPException(status_code=response.status_code, detail="Erro ao criar usuário")
 
 # 3. Autenticar usuário e retornar dados

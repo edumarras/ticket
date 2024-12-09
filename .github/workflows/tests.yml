@@ -4,41 +4,92 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
-  test:
+  run-tests:
     runs-on: ubuntu-latest
-    
     services:
       backend:
         image: pois0n/ticket-db:latest
         ports:
           - 3000:3000
+        options: >-
+          --health-cmd "curl --fail http://localhost:3000/tickets || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
       middleware:
         image: pois0n/ticket-api:latest
         ports:
           - 8000:8000
+        options: >-
+          --health-cmd "curl --fail http://localhost:8000/tickets || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      frontend:
+        image: pois0n/ticket-front:latest
+        ports:
+          - 5000:5000
+        options: >-
+          --health-cmd "curl --fail http://localhost:5000 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-asyncio httpx fastapi flask requests pytest-cov
-        pip install -r requirements.txt
-        
-    - name: Run tests with coverage
-      run: |
-        pytest --cov=. --cov-report=xml
-        
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies (Front)
+        working-directory: ./front
+        run: |
+          pip install -r requirements.txt
+          pip install pytest requests
+
+      - name: Install dependencies (Mid)
+        working-directory: ./back/mid
+        run: |
+          pip install -r requirements.txt
+          pip install pytest requests
+
+      - name: Install dependencies (Back)
+        working-directory: ./back/backend
+        run: |
+          pip install pytest requests
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Aguardando containers subirem..."
+          sleep 30
+
+      - name: Run Front Unit Tests
+        working-directory: ./front
+        run: |
+          echo "Rodando testes unitários do front..."
+          pytest tests/unit --maxfail=1 -v
+
+      - name: Run Mid & Back Unit Tests
+        working-directory: ./back
+        run: |
+          echo "Rodando testes unitários do mid e back..."
+          pytest tests/unit --maxfail=1 -v
+
+      - name: Run Integration Tests (Front -> Mid)
+        working-directory: ./front
+        run: |
+          echo "Rodando testes de integração Front->Mid..."
+          pytest tests/integration --maxfail=1 -v
+
+      - name: Run Integration Tests (Mid -> Back)
+        working-directory: ./back
+        run: |
+          echo "Rodando testes de integração Mid->Back..."
+          pytest tests/integration --maxfail=1 -v
