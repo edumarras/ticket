@@ -58,6 +58,7 @@ jobs:
       - name: Run Front Unit Tests
         working-directory: ./front
         run: |
+          export PYTHONPATH=$PWD
           echo "Rodando testes unitários do front..."
           pytest tests/unit --maxfail=1 -v
 
@@ -70,6 +71,7 @@ jobs:
       - name: Run Integration Tests (Front -> Mid)
         working-directory: ./front
         run: |
+          export PYTHONPATH=$PWD
           echo "Rodando testes de integração Front->Mid..."
           pytest tests/integration --maxfail=1 -v
 
