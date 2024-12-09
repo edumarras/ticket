@@ -55,30 +55,35 @@ jobs:
           echo "Aguardando containers subirem por 90 segundos..."
           sleep 90
 
+      # Rodamos aqui o test_api.py, que testa o api.py via container backend
+      - name: Run API Endpoint Tests (Container-based)
+        working-directory: ./back/tests/unit
+        run: |
+          echo "Rodando testes do api.py contra o container..."
+          pytest test_api.py --maxfail=1 -v
+
       - name: Run Front Unit Tests
         working-directory: ./front
         run: |
-          echo "Rodando testes unitários do front..."
           export PYTHONPATH=$PWD
+          echo "Rodando testes unitários do front..."
           pytest tests/unit --maxfail=1 -v
 
       - name: Run Mid & Back Unit Tests
         working-directory: ./back
         run: |
           echo "Rodando testes unitários do mid e back..."
-          export PYTHONPATH=$PWD
           pytest tests/unit --maxfail=1 -v
 
       - name: Run Integration Tests (Front -> Mid)
         working-directory: ./front
         run: |
-          echo "Rodando testes de integração Front->Mid..."
           export PYTHONPATH=$PWD
+          echo "Rodando testes de integração Front->Mid..."
           pytest tests/integration --maxfail=1 -v
 
       - name: Run Integration Tests (Mid -> Back)
         working-directory: ./back
         run: |
           echo "Rodando testes de integração Mid->Back..."
-          export PYTHONPATH=$PWD
           pytest tests/integration --maxfail=1 -v
