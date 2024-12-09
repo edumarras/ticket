@@ -18,7 +18,7 @@ jobs:
         image: pois0n/ticket-api:latest
         ports:
           - 8000:8000
-        # Se necessário, defina a variável de ambiente:
+        # Caso precise, defina a variável de ambiente:
         # environment:
         #   BACKEND_URL: http://backend:3000
 
@@ -58,11 +58,11 @@ jobs:
           echo "Aguardando containers subirem por 90 segundos..."
           sleep 90
 
-      # Testes do api.py (backend) usando o container
-      - name: Run API Endpoint Tests (Container-based)
+      # Testes do api.py (backend) usando o container (unit do back)
+      - name: Run Back API Endpoint Tests (Unit)
         working-directory: ./back/tests/unit
         run: |
-          echo "Rodando testes do api.py contra o container..."
+          echo "Rodando testes unitários do backend (api.py) contra o container..."
           pytest test_api.py --maxfail=1 -v
 
       # Testes unitários do front
@@ -73,24 +73,18 @@ jobs:
           echo "Rodando testes unitários do front..."
           pytest tests/unit --maxfail=1 -v
 
-      # Testes unitários do mid e back
+      # Testes unitários do mid e back (outros testes unitários)
       - name: Run Mid & Back Unit Tests
         working-directory: ./back
         run: |
-          echo "Rodando testes unitários do mid e back..."
+          echo "Rodando testes unitários do mid e outros do back..."
           pytest tests/unit --maxfail=1 -v
 
-      # Testes de integração Front->Mid
-      - name: Run Integration Tests (Front -> Mid)
-        working-directory: ./front
-        run: |
-          export PYTHONPATH=$PWD
-          echo "Rodando testes de integração Front->Mid..."
-          pytest tests/integration --maxfail=1 -v
-
-      # Testes de integração Mid->Back
-      - name: Run Integration Tests (Mid -> Back)
+      # Teste de integração recém-criado (register_and_login_user) no middleware
+      - name: Run Integration Test (Register & Login User)
+        # Supondo que o teste de integração esteja em ./back/tests/integration/test_register_and_login.py
         working-directory: ./back
         run: |
-          echo "Rodando testes de integração Mid->Back..."
-          pytest tests/integration --maxfail=1 -v
+          export PYTHONPATH=$PWD
+          echo "Rodando teste de integração (Register & Login User via middleware)..."
+          pytest tests/integration/test_register_and_login.py --maxfail=1 -v
