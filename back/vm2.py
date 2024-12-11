@@ -9,7 +9,7 @@ IMAGES = {
 }
 
 # Inicializa o cliente Docker
-client = docker.from_env()
+client = docker.from_env() 
 
 def get_remote_image_digest(image_name):
     """Obtém o digest da imagem remota para verificar se há atualizações."""
