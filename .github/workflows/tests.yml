@@ -18,9 +18,7 @@ jobs:
         image: pois0n/ticket-api:latest
         ports:
           - 8000:8000
-        # Caso precise, defina a variável de ambiente:
-        # environment:
-        #   BACKEND_URL: http://backend:3000
+
 
       frontend:
         image: pois0n/ticket-front:latest
